@@ -1,60 +1,72 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { TextField, Button, Checkbox, FormControlLabel } from "@mui/material";
+import {
+  TextField,
+  Button /*  FormControlLabel,Checkbox  */,
+} from "@mui/material";
 import moment from "moment";
 
 const DataPage = () => {
   const [data, setData] = useState([]);
+  const [hours, setHours] = useState([]);
   const { register, handleSubmit, reset } = useForm();
 
   const onSubmit = (formData) => {
-    setData((prevData) => [...prevData, { ...formData, checked: false }]);
+    setData((prevData) => [...prevData, { ...formData }]);
+    setHours(
+      calculateHours(
+        formData.tomaInicial,
+        formData.intervalo,
+        formData.medicacion
+      )
+    );
     reset();
   };
 
-  /*  const handleEdit = (index) => {
-    console.log("Edit row at index:", index);
-  };
-
-  const handleDelete = (index) => {
-    setData((prevData) => prevData.filter((_, i) => i !== index));
-  }; */
-
-  const calculateHours = (initialTime, interval) => {
-    const hours = [initialTime];
-    let currentTime = moment(initialTime, "HH:mm");
+  const calculateHours = (tomaInicial, intervalo, medicacion) => {
+    const hours = [
+      { medicacion: medicacion, proximoHorario: tomaInicial, checked: false },
+    ];
+    let currentTime = moment(tomaInicial, "HH:mm");
 
     const endOfDay = moment("23:59", "HH:mm");
 
     while (currentTime.isBefore(endOfDay)) {
-      const nextTime = currentTime.clone().add(interval, "hours");
+      const nextTime = currentTime.clone().add(intervalo, "hours");
       if (nextTime.isAfter(endOfDay)) {
         break;
       }
-      hours.push(nextTime.format("HH:mm"));
+      let row = {
+        medicacion: medicacion,
+        proximoHorario: nextTime.format("HH:mm"),
+        checked: false,
+      };
+
+      hours.push(row);
+      //hours.push(nextTime.format("HH:mm"));
       currentTime = nextTime;
     }
 
-    return hours.map((hour) => moment(hour, "HH:mm").toDate());
+    return hours; /* .map((hour) => moment(hour, "HH:mm")); */
   };
 
-  const sortedData = [...data].sort((a, b) =>
-    moment(calculateHours(a.tomaInicial, parseInt(a.intervalo))[0]).diff(
-      moment(calculateHours(b.tomaInicial, parseInt(b.intervalo))[0])
-    )
-  );
-
-  const handleCheckboxChange = (index) => {
+  /*  const handleCheckboxChange = (index) => {
     setData((prevData) =>
       prevData.map((row, i) =>
         i === index ? { ...row, checked: !row.checked } : row
       )
     );
-    console.log(data);
-  };
+  }; */
 
   return (
-    <div>
+    <div
+      style={{
+        width: "100vw",
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
         style={{ display: "flex", flexDirection: "column", gap: 15 }}
@@ -73,25 +85,21 @@ const DataPage = () => {
       </form>
 
       <div>
-        {sortedData.map((row, index) => (
+        {data.map((row, index) => (
           <div key={index}>
-            {/*        <Button onClick={() => handleEdit(index)}>Edit</Button>
-            <Button onClick={() => handleDelete(index)}>Delete</Button> */}
-            {calculateHours(row.tomaInicial, parseInt(row.intervalo)).map(
-              (hour, i) => (
-                <div key={i}>
-                  {hour} - {row.medicacion}
-                  <FormControlLabel
+            {hours.map((hour, i) => (
+              <div key={i}>
+                {JSON.stringify(hour)}
+                {/*  <FormControlLabel
                     control={
                       <Checkbox
                         checked={row.checked}
                         onChange={() => handleCheckboxChange(index)}
                       />
                     }
-                  />
-                </div>
-              )
-            )}
+                  /> */}
+              </div>
+            ))}
           </div>
         ))}
       </div>
