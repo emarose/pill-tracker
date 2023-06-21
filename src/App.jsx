@@ -1,25 +1,66 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 import {
   TextField,
-  Button /*  FormControlLabel,Checkbox  */,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  Chip,
+  Grid,
+  Box,
+  Card,
+  CardContent,
 } from "@mui/material";
 import moment from "moment";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { StaticTimePicker } from "@mui/x-date-pickers/StaticTimePicker";
+import { esES } from "@mui/x-date-pickers/locales";
 
-const DataPage = () => {
-  const [data, setData] = useState([]);
-  const [hours, setHours] = useState([]);
+// Set the default locale
+
+import { PDFViewer } from "@react-pdf/renderer";
+import { PDFDocument } from "./components/PDFDocument";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#8f0ec5",
+    },
+    esES,
+  },
+});
+
+const App = () => {
   const { register, handleSubmit, reset } = useForm();
+  const [hours, setHours] = useState([]);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [medicationColors, setMedicationColors] = useState({});
+  const [showPDF, setShowPDF] = useState(false);
+  const [regeneratePDF, setRegeneratePDF] = useState(false);
 
   const onSubmit = (formData) => {
-    setData((prevData) => [...prevData, { ...formData }]);
-    setHours(
-      calculateHours(
-        formData.tomaInicial,
-        formData.intervalo,
-        formData.medicacion
-      )
+    const time = new Date(selectedTime).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "numeric",
+    });
+
+    const newHours = calculateHours(
+      time,
+      formData.intervalo,
+      formData.medicacion
     );
+    const updatedHours = [...hours, ...newHours];
+
+    const sortedHours = updatedHours.sort((a, b) => {
+      const timeA = moment(a.proximoHorario, "HH:mm");
+      const timeB = moment(b.proximoHorario, "HH:mm");
+      return timeA.diff(timeB);
+    });
+
+    setHours(sortedHours);
     reset();
   };
 
@@ -50,61 +91,146 @@ const DataPage = () => {
     return hours; /* .map((hour) => moment(hour, "HH:mm")); */
   };
 
-  /*  const handleCheckboxChange = (index) => {
-    setData((prevData) =>
+  const handleCheckboxChange = (index) => {
+    setHours((prevData) =>
       prevData.map((row, i) =>
         i === index ? { ...row, checked: !row.checked } : row
       )
     );
-  }; */
+  };
+
+  const handleColorChange = (medicacion, color) => {
+    setMedicationColors((prevColors) => ({
+      ...prevColors,
+      [medicacion]: color,
+    }));
+  };
+
+  const getRandomColor = () => {
+    const minValue = 175; // Minimum value for each color channel (R, G, B)
+    const range = 75;
+
+    const randomChannelValue = () =>
+      minValue + Math.floor(Math.random() * range);
+
+    const red = randomChannelValue();
+    const green = randomChannelValue();
+    const blue = randomChannelValue();
+
+    return `rgb(${red},${green},${blue})`;
+  };
+
+  const getMedicationColor = (medicacion) => {
+    if (medicationColors[medicacion]) {
+      return medicationColors[medicacion];
+    } else {
+      const color = getRandomColor();
+      handleColorChange(medicacion, color);
+      return color;
+    }
+  };
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        style={{ display: "flex", flexDirection: "column", gap: 15 }}
-      >
-        <TextField label="Medicacion" {...register("medicacion")} />
-        <TextField
-          label="Toma inicial"
-          type="time"
-          {...register("tomaInicial")}
-        />
-        <TextField label="Intervalo" type="number" {...register("intervalo")} />
-        <TextField label="Notas" {...register("notas")} />
-        <Button type="submit" variant="contained">
-          Add
-        </Button>
-      </form>
-
-      <div>
-        {data.map((row, index) => (
-          <div key={index}>
-            {hours.map((hour, i) => (
-              <div key={i}>
-                {JSON.stringify(hour)}
-                {/*  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={row.checked}
-                        onChange={() => handleCheckboxChange(index)}
+    <ThemeProvider theme={theme}>
+      <div className="container">
+        <Card
+          sx={{
+            boxShadow: "0 0 15px 1px rgba(100,100,100,0.5)",
+          }}
+          variant="outlined"
+          shadow="sm"
+        >
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Medicacion"
+                        required
+                        {...register("medicacion")}
                       />
-                    }
-                  /> */}
-              </div>
-            ))}
+                    </Grid>
+                    <Grid item>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <StaticTimePicker
+                          sx={{
+                            borderRadius: 1,
+                            outline: "1px solid rgba(120,120,120,0.4)",
+                          }}
+                          onChange={(e) => setSelectedTime(e)}
+                        />
+                      </LocalizationProvider>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Intervalo"
+                        type="number"
+                        required
+                        {...register("intervalo")}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField label="Notas" {...register("notas")} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Button type="submit" variant="contained">
+                        Agregar
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+              </Grid>
+
+              <Grid item sm={6}>
+                {hours.map((hour, i) => (
+                  <Box key={i}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={hour.checked}
+                          onChange={() => handleCheckboxChange(i)}
+                        />
+                      }
+                    />
+                    <Chip
+                      style={{
+                        textTransform: "capitalize",
+                        backgroundColor: getMedicationColor(hour.medicacion),
+                      }}
+                      label={`${hour.proximoHorario} - ${hour.medicacion} `}
+                      variant="outlined"
+                    />
+                  </Box>
+                ))}
+              </Grid>
+            </Grid>
+
+            {hours.length > 0 && (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setShowPDF(true);
+                  setRegeneratePDF(true);
+                }}
+              >
+                Guardar como PDF
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {regeneratePDF && showPDF && (
+          <div style={{ height: "100vh" }}>
+            <PDFViewer width="100%" height="100%">
+              <PDFDocument hours={hours} />
+            </PDFViewer>
           </div>
-        ))}
+        )}
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
-export default DataPage;
+export default App;
