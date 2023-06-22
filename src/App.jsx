@@ -175,7 +175,11 @@ const App = () => {
                       <TextField label="Notas" {...register("notas")} />
                     </Grid>
                     <Grid item xs={12}>
-                      <Button type="submit" variant="contained">
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        style={{ marginBottom: 10 }}
+                      >
                         Agregar
                       </Button>
                     </Grid>
@@ -209,20 +213,21 @@ const App = () => {
 
             {hours.length > 0 && (
               <Button
+                style={{ marginBlock: 30 }}
                 variant="contained"
                 onClick={() => {
                   setShowPDF(true);
                   setRegeneratePDF(true);
                 }}
               >
-                Guardar como PDF
+                Generar PDF
               </Button>
             )}
           </CardContent>
         </Card>
 
         {regeneratePDF && showPDF && (
-          <div style={{ height: "100vh" }}>
+          <div style={{ height: "100vh", marginTop: 30 }}>
             <PDFViewer width="100%" height="100%">
               <PDFDocument hours={hours} />
             </PDFViewer>
