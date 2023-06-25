@@ -13,13 +13,9 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   row: {
-    marginBottom: 15,
-    border: "1px solid grey",
-    padding: 7,
-    borderRadius: 4,
-    maxWidth: 400,
+    marginBottom: 10,
+    paddingVertical: 7,
     flexDirection: "row",
-    alignItems: "center",
   },
   horario: { textTransform: "capitalize" },
 });
@@ -32,8 +28,11 @@ export const PDFDocument = ({ hours }) => (
           <View style={styles.row} key={index}>
             <View style={styles.checkbox} />
             <Text style={styles.horario}>
-              {`${hour.proximoHorario} - ${hour.medicacion}`}
+              {`${hour.proximoHorario} - ${hour.medicacion} ${
+                hour.notas && "( " + hour.notas + " )"
+              } `}
             </Text>
+            {hour.notes && <Text>{hour.notes}</Text>}
           </View>
         ))}
       </View>
