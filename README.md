@@ -1,5 +1,7 @@
 # Medicine Schedule Planner
+![Image 1](https://ibb.co/mDSh51R)
 
+https://ibb.co/Zfg6XrC
 The Medicine Schedule Planner is a React application used to schedule and keep track of the timing for medicines. It allows users to enter the medicine, an initial time, and an interval, resulting in a daily scheduled routine. The routine can be managed online by checking the checkboxes for each intake or printed as a PDF for manual completion.
 
 This planner can be used for scheduling any timed event and also provides the ability to add notes to each medicine entry. The project is built using React ES6 with Material UI, React Hook Forms, and React-PDF libraries.
