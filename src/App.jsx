@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
 import {
   TextField,
   Button,
@@ -18,9 +17,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticTimePicker } from "@mui/x-date-pickers/StaticTimePicker";
 import { esES } from "@mui/x-date-pickers/locales";
-
-// Set the default locale
-
 import { PDFViewer } from "@react-pdf/renderer";
 import { PDFDocument } from "./components/PDFDocument";
 
@@ -39,18 +35,19 @@ const App = () => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [medicationColors, setMedicationColors] = useState({});
   const [showPDF, setShowPDF] = useState(false);
-  const [regeneratePDF, setRegeneratePDF] = useState(false);
 
   const onSubmit = (formData) => {
     const time = new Date(selectedTime).toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
 
     const newHours = calculateHours(
       time,
       formData.intervalo,
-      formData.medicacion
+      formData.medicacion,
+      formData.notas
     );
     const updatedHours = [...hours, ...newHours];
 
@@ -59,14 +56,19 @@ const App = () => {
       const timeB = moment(b.proximoHorario, "HH:mm");
       return timeA.diff(timeB);
     });
-
+    setShowPDF(true);
     setHours(sortedHours);
     reset();
   };
 
-  const calculateHours = (tomaInicial, intervalo, medicacion) => {
+  const calculateHours = (tomaInicial, intervalo, medicacion, notas) => {
     const hours = [
-      { medicacion: medicacion, proximoHorario: tomaInicial, checked: false },
+      {
+        medicacion: medicacion,
+        proximoHorario: tomaInicial,
+        checked: false,
+        notas: notas,
+      },
     ];
     let currentTime = moment(tomaInicial, "HH:mm");
 
@@ -77,18 +79,19 @@ const App = () => {
       if (nextTime.isAfter(endOfDay)) {
         break;
       }
+
       let row = {
         medicacion: medicacion,
-        proximoHorario: nextTime.format("HH:mm"),
+        proximoHorario: moment(nextTime).format("HH:mm").padStart(5, "0"),
+        notas: notas,
         checked: false,
       };
 
       hours.push(row);
-      //hours.push(nextTime.format("HH:mm"));
       currentTime = nextTime;
     }
 
-    return hours; /* .map((hour) => moment(hour, "HH:mm")); */
+    return hours;
   };
 
   const handleCheckboxChange = (index) => {
@@ -108,7 +111,7 @@ const App = () => {
 
   const getRandomColor = () => {
     const minValue = 175; // Minimum value for each color channel (R, G, B)
-    const range = 75;
+    const range = 65;
 
     const randomChannelValue = () =>
       minValue + Math.floor(Math.random() * range);
@@ -203,30 +206,19 @@ const App = () => {
                         textTransform: "capitalize",
                         backgroundColor: getMedicationColor(hour.medicacion),
                       }}
-                      label={`${hour.proximoHorario} - ${hour.medicacion} `}
+                      label={`${hour.proximoHorario} - ${hour.medicacion} ${
+                        hour.notas && "( " + hour.notas + " )"
+                      } `}
                       variant="outlined"
                     />
                   </Box>
                 ))}
               </Grid>
             </Grid>
-
-            {hours.length > 0 && (
-              <Button
-                style={{ marginBlock: 30 }}
-                variant="contained"
-                onClick={() => {
-                  setShowPDF(true);
-                  setRegeneratePDF(true);
-                }}
-              >
-                Generar PDF
-              </Button>
-            )}
           </CardContent>
         </Card>
 
-        {regeneratePDF && showPDF && (
+        {showPDF && (
           <div style={{ height: "100vh", marginTop: 30 }}>
             <PDFViewer width="100%" height="100%">
               <PDFDocument hours={hours} />
