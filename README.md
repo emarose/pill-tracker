@@ -1,11 +1,12 @@
 # Medicine Schedule Planner
 
+
 <div style="display: flex;">
-  <div style="flex: 50%;">
-    <img src="https://i.ibb.co/p1KvwTp/printver.png" alt="Image 1" style="width: 100%;">
+  <div style="width: 50%;">
+    <img src="https://i.ibb.co/4mJ4R9F/online.png" alt="Image 1" style="width: 100%;">
   </div>
-  <div style="flex: 50%;">
-    <img src="https://i.ibb.co/4mJ4R9F/online.png" alt="Image 2" style="width: 100%;">
+  <div style="width: 50%;">
+    <img src="https://i.ibb.co/p1KvwTp/printver.png" alt="Image 2" style="width: 100%;">
   </div>
 </div>
 ![Image 1](https://i.ibb.co/4mJ4R9F/online.png)
