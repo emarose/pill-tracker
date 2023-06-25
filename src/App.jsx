@@ -11,6 +11,7 @@ import {
   Box,
   Card,
   CardContent,
+  Typography,
 } from "@mui/material";
 import moment from "moment";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -133,6 +134,10 @@ const App = () => {
     }
   };
 
+  const handleDeleteToma = (index) => {
+    setHours((prevData) => prevData.filter((_, i) => i !== index));
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <div className="container">
@@ -144,7 +149,7 @@ const App = () => {
           shadow="sm"
         >
           <CardContent>
-            <Grid container spacing={2}>
+            <Grid container spacing={1}>
               <Grid item>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <Grid container spacing={4}>
@@ -161,6 +166,11 @@ const App = () => {
                           sx={{
                             borderRadius: 1,
                             outline: "1px solid rgba(120,120,120,0.4)",
+                          }}
+                          localeText={{
+                            toolbarTitle: "Horario",
+                            cancelButtonLabel: null,
+                            okButtonLabel: null,
                           }}
                           onChange={(e) => setSelectedTime(e)}
                         />
@@ -210,6 +220,7 @@ const App = () => {
                         hour.notas && "( " + hour.notas + " )"
                       } `}
                       variant="outlined"
+                      onDelete={() => handleDeleteToma(i)}
                     />
                   </Box>
                 ))}
